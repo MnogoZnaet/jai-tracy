@@ -43,7 +43,7 @@ generate_bindings :: (args: [] string) -> bool {
         source_file := tprint("%/public/TracyClient.cpp", SOURCE_PATH);
 
         #if OS == .WINDOWS {
-            extra_args := string.["/DTRACY_ENABLE", "/DTRACY_EXPORTS"];
+            extra_args := string.["/DTRACY_ENABLE", "/DTRACY_ON_DEMAND", "/DTRACY_EXPORTS", "/Dfileno=_fileno"];
         } else {
             extra_args := string.["-DTRACY_ENABLE", "-DTRACY_EXPORTS", "-std=c++11", "-Wno-deprecated-declarations"];
         }
@@ -81,7 +81,6 @@ generate_bindings :: (args: [] string) -> bool {
             success &&= (run_result.exit_code == 0);
         } else {
             success &&= build_cpp_dynamic_lib(lib_path, source_file, extra = extra_args, debug = compile_debug);
-            success &&= build_cpp_static_lib(lib_path,  source_file, extra = extra_args, debug = compile_debug);
         }
 
         if !success     return false;
@@ -95,6 +94,7 @@ generate_bindings :: (args: [] string) -> bool {
         array_add(*libnames, LIB_BASE_NAME);
         array_add(*source_files, tprint("%/public/tracy/TracyC.h", SOURCE_PATH));
         array_add(*extra_clang_arguments, "-D", "TRACY_ENABLE");
+        array_add(*extra_clang_arguments, "-D", "TRACY_ON_DEMAND");
 
         generate_library_declarations = false;
         footer = tprint(FOOTER_TEMPLATE, to_lower_copy(LIB_BASE_NAME), LIB_BASE_NAME);

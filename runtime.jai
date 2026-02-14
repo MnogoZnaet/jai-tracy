@@ -4,6 +4,8 @@
 #if ENABLED {
 	#load "bindings.jai";
 
+	CALLSTACK_DEPTH :: 5;
+
 	// Call this every frame.
 	FrameMark :: () #expand #no_debug {
 		___tracy_emit_frame_mark(null);
@@ -24,7 +26,7 @@
 		}
 
 		tracy_loc := ___tracy_alloc_srcloc(xx location.line_number, location.fully_pathed_filename.data, xx location.fully_pathed_filename.count, ZONE_NAME.data, ZONE_NAME.count, 0);
-		tracy_ctx := ___tracy_emit_zone_begin_alloc(tracy_loc, 1);
+		tracy_ctx := ___tracy_emit_zone_begin_alloc_callstack(tracy_loc, CALLSTACK_DEPTH, 1);
 
 		if text  ___tracy_emit_zone_text(tracy_ctx, text.data, cast(u64) text.count);
 		if color ___tracy_emit_zone_color(tracy_ctx, color);
@@ -39,6 +41,8 @@
         #library,system,link_always "msvcprtd";
         #library,system,link_always "advapi32";
         #library,system,link_always "user32";
+        #library,system,link_always "DbgHelp";
+        #library,system,link_always "legacy_stdio_definitions";  // fileno → _fileno compat
     } else {
         #library,system,link_always "libpthread";
         #library,system,link_always "libdl";
